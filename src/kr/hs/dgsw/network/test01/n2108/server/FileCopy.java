@@ -30,9 +30,10 @@ public class FileCopy {
 			FileOutputStream fos = new FileOutputStream(copyFile);
 
 			int readbit = 0;
+			byte[] bytes = new byte[1024];
 			
-			while ((readbit = fis.read()) != -1) {
-				fos.write(readbit);
+			while ((readbit = fis.read(bytes)) != -1) {
+				fos.write(bytes, 0, readbit);
 			}
 			
 			fos.flush();

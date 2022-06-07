@@ -16,15 +16,20 @@ public class Protocol implements Serializable {
 	public static final int UPLOAD_RESULT = 8;		//업로드 결과
 	public static final int RES_DOWNLOAD = 9;		//다운로드인증 요청
 	public static final int REQ_DOWNLOAD = 10;		//다운로드 요청
-	public static final int NONE_FILE = 11;			//다운로드요청 파일 없음
+	public static final int NONE_FILE = 11;			//다운로드 요청 파일 없음
+	public static final int RES_FILECHECK = 12;		// 파일체크요청
+	public static final int REQ_FILECHECK = 13;
 	public static final int LEN_LOGIN_ID = 10;   		//ID길이
 	public static final int LEN_LOGIN_PASSWORD = 10; 	//PW길이
 	public static final int LEN_LOGIN_RESULT = 2;  		//로그인인증값 길이
 	public static final int LEN_PROTOCOLTYPE = 1;  	//프로토콜타입 길이
-	public static final int LEN_FILELIST = 1;		//파일 길이
-	public static final int LEN_FILEPATH = 50;		//파일 경로 길이
+	public static final int LEN_FILELIST = 100;		//파일 길이
+	public static final int LEN_FILEPATH = 50;
+	public static final int LEN_FILEIN = 2;
+	public static final int LEN_FILESIZE = 100;
+	public static final int LEN_FILECOUNT = 2;
 	public static final int LEN_FILENAME = 15;		//파일이름 길이
-	public static final int LEN_FILELIST_RESULT = 2;   //파일여부 길이
+	public static final int LEN_FILELIST_RESULT = 1000;   //파일여부 길이
 	public static final int LEN_MAX = 1000;    			//최대 데이타 길이
 	
 	protected int protocolType;
@@ -51,7 +56,9 @@ public class Protocol implements Serializable {
 		    case RES_LOGIN : packet = new byte[LEN_PROTOCOLTYPE + LEN_LOGIN_ID + LEN_LOGIN_PASSWORD]; break;
 		    case RES_RELOGIN : packet = new byte[LEN_PROTOCOLTYPE]; break;
 		    case RES_FILELIST : packet = new byte[LEN_MAX]; break;
-		    case RES_UPLOAD : packet = new byte[LEN_PROTOCOLTYPE + LEN_FILEPATH + LEN_FILENAME]; break;
+		    case RES_FILECHECK : packet = new byte[LEN_PROTOCOLTYPE + LEN_FILENAME + LEN_FILEPATH]; break;
+		    case REQ_FILECHECK : packet = new byte[LEN_PROTOCOLTYPE + LEN_FILENAME + LEN_FILEPATH + LEN_FILEIN]; break;
+		    case RES_UPLOAD : packet = new byte[LEN_PROTOCOLTYPE + LEN_FILENAME]; break;
 		    case RES_DOWNLOAD : packet = new byte[LEN_PROTOCOLTYPE + LEN_FILENAME]; break;
 		    case REQ_DOWNLOAD : packet = new byte[LEN_PROTOCOLTYPE + LEN_FILENAME]; break;
 		    case NONE_FILE : packet = new byte[LEN_PROTOCOLTYPE]; break;
@@ -66,7 +73,6 @@ public class Protocol implements Serializable {
 		packet[0] = (byte)protocolType;
 		
 		return packet;
-		// TODO Auto-generated method stub
 		
 	}
 	
@@ -121,15 +127,33 @@ public class Protocol implements Serializable {
 	}
 	
 	public String getFileCount() {
-		return new String(packet, LEN_PROTOCOLTYPE, LEN_FILELIST).trim();
+		return new String(packet, LEN_PROTOCOLTYPE, LEN_FILECOUNT).trim();
 	}
 	
 	public void setFileCount(String count) {
 		System.arraycopy(count.trim().getBytes(), 0, packet, LEN_PROTOCOLTYPE, count.trim().getBytes().length);
 	}
 	
+	public String getFileList() {
+		return new String(packet, LEN_PROTOCOLTYPE + LEN_FILECOUNT, LEN_FILELIST).trim();
+	}
+	
+	public void setFileLIst(String name) {
+		System.arraycopy(name.trim().getBytes(), 0, packet, LEN_PROTOCOLTYPE + LEN_FILECOUNT, name.trim().getBytes().length);
+		packet[LEN_PROTOCOLTYPE + LEN_FILECOUNT + name.trim().getBytes().length] = '\0';
+	}
+	
+	public String getFileSize() {
+		return new String(packet, LEN_PROTOCOLTYPE + LEN_FILECOUNT + LEN_FILELIST, LEN_FILESIZE).trim();
+	}
+	
+	public void setFileSize(String size) {
+		System.arraycopy(size.trim().getBytes(), 0, packet, LEN_PROTOCOLTYPE + LEN_FILECOUNT + LEN_FILELIST, size.trim().getBytes().length);
+		packet[LEN_PROTOCOLTYPE + LEN_FILECOUNT + LEN_FILELIST+ size.trim().getBytes().length] = '\0';
+	}
+	
 	public String getFilePath() {
-		return new String(packet, LEN_PROTOCOLTYPE, LEN_FILEPATH).trim();
+		return new String(packet, LEN_PROTOCOLTYPE , LEN_FILEPATH).trim();
 	}
 	
 	public void setFilePath(String path) {
@@ -143,6 +167,15 @@ public class Protocol implements Serializable {
 	public void setFileName(String name) {
 		System.arraycopy(name.trim().getBytes(), 0, packet, LEN_PROTOCOLTYPE + LEN_FILEPATH, name.trim().getBytes().length);
 		packet[LEN_PROTOCOLTYPE + LEN_FILEPATH + name.trim().getBytes().length] = '\0';
+	}
+	
+	public String getFileIn() {
+		return new String(packet, LEN_PROTOCOLTYPE + LEN_FILEPATH + LEN_FILENAME, LEN_FILEIN).trim();
+	}
+	
+	public void setFileIn(String in) {
+		System.arraycopy(in.trim().getBytes(), 0, packet, LEN_PROTOCOLTYPE + LEN_FILEPATH + LEN_FILENAME, in.trim().getBytes().length);
+		packet[LEN_PROTOCOLTYPE + LEN_FILEPATH + LEN_FILENAME + in.trim().getBytes().length] = '\0';
 	}
 	
 	public String getDWFileName() {

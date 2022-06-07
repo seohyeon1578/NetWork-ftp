@@ -7,7 +7,7 @@ public class ClientMain {
 	public static void main(String[] args) {
 		
 		try {
-			Socket sc = new Socket("10.80.162.111",5000);
+			Socket sc = new Socket("10.80.162.41",5000);
 			
 			System.out.println("** 서버에 접속하였습니다. **");
 			

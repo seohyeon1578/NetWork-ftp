@@ -13,7 +13,7 @@ public class FileDownload {
 	}
 
 	public int down() {
-		File originalFile = new File("D:/test/" + fileName);
+		File originalFile = new File("D:/UPLOAD/" + fileName);
 		File copyFile = new File("D:/download/" + fileName);
 		File copyfilefolder = new File("D:/download");
 		
@@ -27,9 +27,10 @@ public class FileDownload {
 			FileOutputStream fos = new FileOutputStream(copyFile);
 
 			int readbit = 0;
+			byte[] bytes = new byte[1024];
 			
-			while ((readbit = fis.read()) != -1) {
-				fos.write(readbit);
+			while ((readbit = fis.read(bytes)) != -1) {
+				fos.write(bytes, 0, readbit);
 			}
 			
 			fos.flush();

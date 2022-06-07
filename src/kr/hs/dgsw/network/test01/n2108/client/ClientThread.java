@@ -1,12 +1,15 @@
 package kr.hs.dgsw.network.test01.n2108.client;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.text.DecimalFormat;
 import java.util.Scanner;
 
 import kr.hs.dgsw.network.test01.n2108.protocol.Protocol;
@@ -45,7 +48,7 @@ public class ClientThread extends Thread{
 				int packetType = buf[0];
 			    protocol.setPacket(packetType, buf);
 			    
-			    File file = new File("D:\\test\\");
+			    File file = new File("D:\\UPLOAD\\");
 				File[] files = file.listFiles();
 			    
 			    if(packetType == Protocol.PT_EXIT){
@@ -63,38 +66,12 @@ public class ClientThread extends Thread{
 			    		String filePath = command.split(" ")[1];
 			    		String[] length = filePath.split("/");
 			    		String fileName = length[length.length - 1];
-			    		
 			    		if(command.split(" ").length > 2) {
 			    			fileName = command.split(" ")[2];
 			    		}
-			    		
-			    		boolean sName = false;
-			    		for(int i = 0; i < files.length; i++) {
-			    			
-							if(files[i].getName().equals(fileName)) {
-								sName = true;
-								break;
-							}
-			    		}
-			    		
-			    		if(sName) {
-			    			System.out.print("파일이 이미 있습니다. 덮어쓰기 하실건가요??(Yes: 덮어쓰기 / No: 업로드 취소):");
-			    			String overwrite = scan.nextLine();
-			    			if(overwrite.equals("Yes")) {
-			    				System.out.println("** " + fileName + " 파일을 업로드하였습니다.**");
-					    		protocol = new Protocol(Protocol.RES_UPLOAD);
-					    		protocol.setFilePath(filePath);
-					    		protocol.setFileName(fileName);
-			    			}else {
-			    				System.out.println("업로드를 취소하였습니다.");
-			    				protocol = new Protocol(Protocol.PT_UNDEFINED);
-			    			}
-			    		}else {
-				    		System.out.println("** " + fileName + " 파일을 업로드하였습니다.**");
-				    		protocol = new Protocol(Protocol.RES_UPLOAD);
-				    		protocol.setFilePath(filePath);
-				    		protocol.setFileName(fileName);
-			    		}
+			    		protocol = new Protocol(Protocol.RES_FILECHECK);
+			    		protocol.setFilePath(filePath);
+			    		protocol.setFileName(fileName);
 			    		
 			    	}else if(command.substring(0, 5).equals("/다운로드")) {
 			    		String DWFileName = command.split(" ")[1];
@@ -107,7 +84,6 @@ public class ClientThread extends Thread{
 			    	}else {
 			    		protocol = new Protocol(Protocol.PT_UNDEFINED);
 			    	}
-			    	
 			    	os.write(protocol.getPacket());
 			    }
 		    	
@@ -140,25 +116,14 @@ public class ClientThread extends Thread{
 				    	break;
 				    case Protocol.FILELIST_RESULT :
 				    	String FileCount = protocol.getFileCount();
+				    	String FileName = protocol.getFileList();
+				    	String size = protocol.getFileSize();
 				    	
 				    	System.out.println("** [File List] **");
-				    	for(int i = 0; i < files.length; i++) {
-							if(files[i].isFile()) {
-								String size = "";
-								double f = files[i].length();
-								String[] strArr = {"byte", "Kb", "Mb", "Gb"};
-
-								if(f != 0) {
-								  int idx = (int)Math.floor(Math.log(f)/ Math.log(1024));
-								  DecimalFormat df = new DecimalFormat("#,###.##");
-								  double ret = f / Math.pow(1024, Math.floor(idx));
-								  size = df.format((long)ret) + strArr[idx];
-								}else {
-									size += (long)f + strArr[0];
-								}
-								System.out.printf("** %-15s %10s **\n", files[i].getName(), size);
-							}
-						}
+				    	for(int i = 0; i < Integer.parseInt(FileCount); i++) {
+				    		
+				    		System.out.printf("** %-15s %10s **\n", FileName.split(" ")[i], size.split(" ")[i]);				    		
+				    	}
 				    	System.out.println("** " + FileCount + "개 파일 **");
 				    	
 				    	protocol = new Protocol(Protocol.PT_UNDEFINED);
@@ -181,6 +146,66 @@ public class ClientThread extends Thread{
 				    	protocol = new Protocol(Protocol.PT_UNDEFINED);
 				    	os.write(protocol.getPacket());
 				    	break;
+				    case Protocol.REQ_FILECHECK :
+				    	String fileName = protocol.getFileName();
+				    	String filePath = protocol.getFilePath();
+				    	String sName = protocol.getFileIn();
+
+			    		if(sName.equals("1")) {
+			    			System.out.print("파일이 이미 있습니다. 덮어쓰기 하실건가요??(Yes: 덮어쓰기 / No: 업로드 취소):");
+			    			Scanner scan = new Scanner(System.in);
+			    			String overwrite = scan.nextLine();
+			    			if(overwrite.equals("Yes")) {
+			    				System.out.println("** " + fileName + " 파일을 업로드하였습니다.**");
+			    				DataOutputStream dos = new DataOutputStream(this.os);
+			    				BufferedOutputStream bos = new BufferedOutputStream(dos);
+			    				
+			    				File fl = new File(filePath);
+
+			    				BufferedInputStream bis = new BufferedInputStream(
+			    						new FileInputStream(fl)
+			    				);
+
+			    				protocol = new Protocol(Protocol.RES_UPLOAD);
+			    				protocol.setFileName(fileName);
+			    				os.write(protocol.getPacket());
+			    				
+			    				byte[] bytes = new byte[1024];
+			    				int readbit = 0;
+			    				
+			    				while((readbit = bis.read(bytes)) != -1)
+			    					bos.write(bytes,0,readbit);
+			    				
+			    				bos.flush();
+			    			}else {
+			    				System.out.println("업로드를 취소하였습니다.");
+			    				protocol = new Protocol(Protocol.PT_UNDEFINED);
+			    				os.write(protocol.getPacket());
+			    			}
+			    		}else {
+				    		System.out.println("** " + fileName + " 파일을 업로드하였습니다.**");
+				    		DataOutputStream dos = new DataOutputStream(this.os);
+		    				BufferedOutputStream bos = new BufferedOutputStream(dos);
+		    				
+		    				File fl = new File(filePath);
+
+		    				BufferedInputStream bis = new BufferedInputStream(
+		    						new FileInputStream(fl)
+		    				);
+		    				
+		    				protocol = new Protocol(Protocol.RES_UPLOAD);
+		    				protocol.setDWFileName(fileName);
+		    				os.write(protocol.getPacket());
+
+		    				byte[] bytes = new byte[1024];
+		    				int readbit = 0;
+				    		
+		    				while((readbit = bis.read(bytes)) != -1)
+		    					bos.write(bytes, 0, readbit);
+		    				
+		    				bos.flush();
+			    		}
+			    		
 			    }
 			   
 			  }
