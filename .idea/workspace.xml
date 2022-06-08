@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="06cdf92f-38f6-4c91-852d-c80b0212fd05" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="06cdf92f-38f6-4c91-852d-c80b0212fd05" name="Changes" comment="파일목록 오류 고침 + 업로드 오류 고치기">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/kr/hs/dgsw/network/test01/n2108/client/ClientThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/kr/hs/dgsw/network/test01/n2108/client/ClientThread.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/kr/hs/dgsw/network/test01/n2108/client/FileDownload.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/kr/hs/dgsw/network/test01/n2108/protocol/Protocol.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/kr/hs/dgsw/network/test01/n2108/protocol/Protocol.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/kr/hs/dgsw/network/test01/n2108/server/FileCopy.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/kr/hs/dgsw/network/test01/n2108/server/ServerThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/kr/hs/dgsw/network/test01/n2108/server/ServerThread.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -27,7 +31,7 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$USER_HOME$/IdeaProjects/board" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -39,7 +43,17 @@
       <updated>1653816598185</updated>
       <workItem from="1653816599498" duration="125000" />
       <workItem from="1654084247421" duration="306000" />
+      <workItem from="1654601819529" duration="65000" />
+      <workItem from="1654666199473" duration="36000" />
     </task>
+    <task id="LOCAL-00001" summary="파일목록 오류 고침 + 업로드 오류 고치기">
+      <created>1654601852684</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1654601852684</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -55,5 +69,9 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="파일목록 오류 고침 + 업로드 오류 고치기" />
+    <option name="LAST_COMMIT_MESSAGE" value="파일목록 오류 고침 + 업로드 오류 고치기" />
   </component>
 </project>

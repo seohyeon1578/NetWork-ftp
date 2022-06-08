@@ -28,7 +28,7 @@ public class Protocol implements Serializable {
 	public static final int LEN_FILEIN = 2;
 	public static final int LEN_FILESIZE = 100;
 	public static final int LEN_FILECOUNT = 2;
-	public static final int LEN_FILENAME = 15;		//파일이름 길이
+	public static final int LEN_FILENAME = 100;		//파일이름 길이
 	public static final int LEN_FILELIST_RESULT = 1000;   //파일여부 길이
 	public static final int LEN_MAX = 1000;    			//최대 데이타 길이
 	

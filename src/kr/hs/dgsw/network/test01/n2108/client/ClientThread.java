@@ -1,14 +1,6 @@
 package kr.hs.dgsw.network.test01.n2108.client;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
 import java.util.Scanner;
 
@@ -17,10 +9,13 @@ import kr.hs.dgsw.network.test01.n2108.protocol.Protocol;
 public class ClientThread extends Thread{
 	
 	public Socket sc = null;
+	
+	private Protocol protocol = null;
 
 	private OutputStream os = null;
 	private InputStream is = null;
 	byte[] buf = null;
+	private String filefolder = "D:\\download\\";
 	
 	public ClientThread(Socket sc) {
 		this.sc = sc;
@@ -34,12 +29,80 @@ public class ClientThread extends Thread{
 		}
 	}
 	
+	public void FileReceive(Protocol protocol) {
+		try {
+			DataInputStream dis = new DataInputStream(this.is);
+			BufferedInputStream bis = new BufferedInputStream(dis);
+			
+			String fileNames = protocol.getDWFileName();
+			String fileName = fileNames.split(" ")[0];
+			int fileSize = Integer.parseInt(fileNames.split(" ")[1]);
+			
+			File saveFile = new File(filefolder + fileName); 
+			
+			BufferedOutputStream bos = new BufferedOutputStream(
+					new FileOutputStream(saveFile)
+			);
+			
+			byte[] bytes = new byte[1024];
+			int readbit = 0;
+			int allread = 0;
+			
+			while((readbit = bis.read(bytes)) != -1) {
+				allread += readbit;
+				if(allread > fileSize) {
+					allread = fileSize;
+					readbit = fileSize % 1024;
+				}
+				bos.write(bytes, 0, readbit);
+				if(allread == fileSize)break;
+			}
+			System.out.println("** " + fileName +"을 " + filefolder + "로 다운로드 하였습니다. **");
+			bos.flush();
+		}catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+	}
+	
+	public void FileSend(Protocol protocol, String filePath, String fileName) {
+		try {
+			DataOutputStream dos = new DataOutputStream(this.os);
+			BufferedOutputStream bos = new BufferedOutputStream(dos);
+			
+			File fl = new File(filePath);
+			
+			BufferedInputStream bis = new BufferedInputStream(
+					new FileInputStream(fl)
+			);
+	
+			String flName = fileName + " " + fl.length();
+			
+			protocol = new Protocol(Protocol.RES_UPLOAD);
+			protocol.setDWFileName(flName);
+			os.write(protocol.getPacket());
+			
+			byte[] bytes = new byte[1024];
+			int readbit = 0;
+			
+			while((readbit = bis.read(bytes)) != -1)
+				bos.write(bytes,0,readbit);
+			
+			bos.flush();
+			System.out.println("** " + fileName + " 파일을 업로드하였습니다.**");
+		}catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+	}
+	
+	@Override
 	public void run() {
 	    
 		try {
 			
 			while(true){
-				Protocol protocol = new Protocol();
+				protocol = new Protocol();
 				
 			    buf = protocol.getPacket();
 				
@@ -47,9 +110,6 @@ public class ClientThread extends Thread{
 	
 				int packetType = buf[0];
 			    protocol.setPacket(packetType, buf);
-			    
-			    File file = new File("D:\\UPLOAD\\");
-				File[] files = file.listFiles();
 			    
 			    if(packetType == Protocol.PT_EXIT){
 			    	System.out.println("접속 종료..");
@@ -130,15 +190,15 @@ public class ClientThread extends Thread{
 				    	os.write(protocol.getPacket());
 				    	break;
 				    case Protocol.REQ_DOWNLOAD :
-				    	String DWFileName = protocol.getDWFileName();
-				    	FileDownload fd = new FileDownload(DWFileName);
-				    	
-				    	int nDownReturn = fd.down();
-				    	
-				    	if(nDownReturn == 1)System.out.println("** "+ DWFileName + "을 D:/download/로 다운로드 하였습니다. **");
-				    	
+				    	File file = new File(filefolder);
+					    
+						if(!file.exists()) {
+							file.mkdirs();
+						}
+						
+				    	FileReceive(protocol);
 				    	protocol = new Protocol(Protocol.PT_UNDEFINED);
-				    	os.write(protocol.getPacket());
+						os.write(protocol.getPacket());
 				    	break;
 				    case Protocol.NONE_FILE : 
 				    	System.out.println("해당 파일이 없습니다.");
@@ -156,54 +216,16 @@ public class ClientThread extends Thread{
 			    			Scanner scan = new Scanner(System.in);
 			    			String overwrite = scan.nextLine();
 			    			if(overwrite.equals("Yes")) {
-			    				System.out.println("** " + fileName + " 파일을 업로드하였습니다.**");
-			    				DataOutputStream dos = new DataOutputStream(this.os);
-			    				BufferedOutputStream bos = new BufferedOutputStream(dos);
+			    				FileSend(protocol, filePath, fileName);
 			    				
-			    				File fl = new File(filePath);
-
-			    				BufferedInputStream bis = new BufferedInputStream(
-			    						new FileInputStream(fl)
-			    				);
-
-			    				protocol = new Protocol(Protocol.RES_UPLOAD);
-			    				protocol.setFileName(fileName);
-			    				os.write(protocol.getPacket());
-			    				
-			    				byte[] bytes = new byte[1024];
-			    				int readbit = 0;
-			    				
-			    				while((readbit = bis.read(bytes)) != -1)
-			    					bos.write(bytes,0,readbit);
-			    				
-			    				bos.flush();
-			    			}else {
+			    			}else if(overwrite.equals("No")){
 			    				System.out.println("업로드를 취소하였습니다.");
 			    				protocol = new Protocol(Protocol.PT_UNDEFINED);
 			    				os.write(protocol.getPacket());
 			    			}
 			    		}else {
-				    		System.out.println("** " + fileName + " 파일을 업로드하였습니다.**");
-				    		DataOutputStream dos = new DataOutputStream(this.os);
-		    				BufferedOutputStream bos = new BufferedOutputStream(dos);
+			    			FileSend(protocol, filePath, fileName);
 		    				
-		    				File fl = new File(filePath);
-
-		    				BufferedInputStream bis = new BufferedInputStream(
-		    						new FileInputStream(fl)
-		    				);
-		    				
-		    				protocol = new Protocol(Protocol.RES_UPLOAD);
-		    				protocol.setDWFileName(fileName);
-		    				os.write(protocol.getPacket());
-
-		    				byte[] bytes = new byte[1024];
-		    				int readbit = 0;
-				    		
-		    				while((readbit = bis.read(bytes)) != -1)
-		    					bos.write(bytes, 0, readbit);
-		    				
-		    				bos.flush();
 			    		}
 			    		
 			    }
